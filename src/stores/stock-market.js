@@ -6,21 +6,24 @@ const apiStore = useLechoBeApiStore()
 
 export const useStockMarketStore = defineStore('stock-market', {
   state: () => ({
-    isStockLoaded: false,
-    currentMarketName: '',
-    currentStock: [],
+    market: {
+      isLoaded: false,
+      name: '',
+      stocks: [],
+      totalStocks: 0
+    },
     brandIcons: {},
-    totalStock: 0
+    stockDetail: {} // detail about one stock
   }),
 
   actions: {
     async fetchMarket(marketName, page) {
-      this.isStockLoaded = false
-
+      this.market.isLoaded = false
+      console.log(marketName)
       await fetch(apiStore.getMarketUrl(marketName, page))
         .then(response => response.json())
         .then(result => {
-          this.currentStock = []
+          this.market.stocks = []
 
           for (let s of result.embedded.issues) {
             const tempStock = {
@@ -32,34 +35,59 @@ export const useStockMarketStore = defineStore('stock-market', {
               urn: s?.urn
             }
 
-            this.currentStock.push(tempStock)
+            this.market.stocks.push(tempStock)
           }
 
-          this.totalStock = result.embedded.total            
-          this.marketName = marketName
+          this.market.totalStocks = result.embedded.total            
+          this.market.name = marketName
       })
       .catch(err => { throw err })
 
-      this.isStockLoaded = true
+      this.market.isLoaded = true
     },
 
     async fetchBrandIcons() {
-      if (this.isStockLoaded) {
+      if (this.market.isLoaded) {
 
-        for (let s of this.currentStock) {
+        for (let s of this.market.stocks) {
           if (!this.brandIcons[s.isinCode]) {
 
             await fetch(apiStore.getBrandIconUrl(s.name))
               .then(response => response.json())
               .then(result => {              
                 if (result?.length > 0) {
-                  console.log('new icon for ' + s.name)
                   this.brandIcons[s.isinCode] = { icon: result[0]?.icon }
                 }
               })
           }
         }
       }
+    },
+
+    async fetchStockDetail (stockUrn) {
+      await fetch(apiStore.getStockDetailUrl(stockUrn))
+        .then(response => response.json())
+        .then(result => {
+          this.stockDetail = {
+            name: result?.fullName?.default,
+            isinCode: result?.isinCode,
+            currency: result?.currency,
+            dividend: result?.consensus?.dividend?.previousYearValue, // dividend received year y for y-1 results
+            dividendPercent: result?.consensus?.dividendReturn?.previousYearValue,
+            values: {
+              lastValue: result?.values?.lastPrice,
+              variation: result?.values?.dayChangePercentage,
+              lastTime: result.values?.lastTime
+            },
+            marketCap: result?.consensus?.marketCap
+          }
+        })
+        .catch(error => { throw error })
+    },
+
+    deleteStockDetail() {
+      this.stockDetail = {}
+      console.log('stockDetail deleted')
     }
   }
 })

@@ -49,26 +49,25 @@ export default {
     const markets = computed(() => { return marketStore.markets })
     const selectedMarketName = ref('')
 
-    const currentStock = computed(() => { return stockStore.currentStock })
-    const totalStock = computed(() => { return stockStore.totalStock })
+    const currentStock = computed(() => { return stockStore.market.stocks })
+    const totalStock = computed(() => { return stockStore.market.totalStocks })
 
     const selectedPage = ref(1)
     const getMaxPages = () => {
       return Math.ceil(totalStock.value / 50)
     }
 
-    watch([selectedMarketName], () => {
-      selectedPage.value = 1
-      stockStore.fetchMarket(selectedMarketName.value, selectedPage.value)
-    })
-
-    watch([selectedPage], () => {
-      stockStore.fetchMarket(selectedMarketName.value, selectedPage.value)
+    watch([selectedPage, selectedMarketName], ([newPage, newMarket], [_, oldMarket]) => {
+      // prevent double api call when changing market
+      // because when changing market, need to go to first page of results => triggers one more time with selectedPage
+      if (newMarket !== oldMarket && newPage !== 1) {
+        selectedPage.value = 1
+      } else { stockStore.fetchMarket(selectedMarketName.value, selectedPage.value) }
     })
 
     // --- brand icons ---
     const brandIcons = computed(() => { return stockStore.brandIcons })
-    const isStockLoaded = computed(() => { return stockStore.isStockLoaded })
+    const isStockLoaded = computed(() => { return stockStore.market.isLoaded })
 
     watch(isStockLoaded, () => {
       stockStore.fetchBrandIcons()
@@ -78,7 +77,15 @@ export default {
       return brandIcons.value[isinCode]?.icon ?? ''
     }
 
-    return { markets, selectedMarketName, currentStock, totalStock, selectedPage, getMaxPages, getBrandIcon }
+    return {
+      markets,
+      selectedMarketName,
+      currentStock,
+      totalStock,
+      selectedPage,
+      getMaxPages,
+      getBrandIcon
+    }
   }
 }
 </script>

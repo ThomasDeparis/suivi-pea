@@ -3,7 +3,8 @@ import { defineStore } from 'pinia';
 
 const marketApi = {
   urlBegin: 'https://api.lecho.be/services/stockmarketgroup/urn:',
-  urlEnd: '/issues.json?pageSize=50&page='
+  urlEnd: '/issues.json?pageSize=50&page=',
+  stockDetailUrl: 'https://api.lecho.be/services/issue/'
 }
 
 const brandIconsApi = 'https://api.brandfetch.io/v2/search/'
@@ -36,16 +37,16 @@ export const useLechoBeApiStore = defineStore('lecho-be-api', {
     markets: markets.map(m => m.name)
   }),
 
-  actions: {
-    getMarketUrl(marketName, page) {
-      const market = markets.find(m => m.name === marketName)
+  getters: {
+    getMarketUrl: () => (marketName, page) => {
 
+      const market = markets.find(m => m.name === marketName)
       const apiPage = page - 1
+  
       return marketApi.urlBegin + market.apiUrn + marketApi.urlEnd + apiPage
     },
-    getBrandIconUrl(stockName) {
-      return brandIconsApi + stockName.replace(/\s/g, '')
-    }
+    getBrandIconUrl: () => (stockName) => brandIconsApi + stockName.replace(/\s/g, ''),
+    getStockDetailUrl: () => (stockUrn) => marketApi.stockDetailUrl + stockUrn + '.json'    
   }
 })
 

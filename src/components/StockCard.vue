@@ -15,7 +15,7 @@
         </q-item-section>
       </q-item>
       <q-item class="text-center text-bold">
-        <q-item-section>{{name}}</q-item-section>
+        <q-item-section @click="showDetail()">{{name}}</q-item-section>
       </q-item>
 
       <q-item class="text-center">
@@ -26,9 +26,13 @@
 </template>
 
 <script>
+import StockDetailDialog from './StockDetailDialog.vue'
+import { useQuasar } from 'quasar'
+
 export default {
   name: 'StockCard',
   props: ['stock', 'brandIcon'],
+
   setup (props) {
     const getCurrencyChar = () => {
       let cchar = ''
@@ -40,13 +44,24 @@ export default {
       return cchar
     }
 
+    // --- detail dialog ---
+    const $q = useQuasar()
+    const showDetail = () => {
+      $q.dialog({
+        component: StockDetailDialog,
+        componentProps: { stockUrn: props.stock.urn }
+      })
+    }
+
     return {
       isinCode: props.stock.isinCode,
       name: props.stock.name,
       lastValue: props.stock.lastValue,
       currency: props.stock.currency,
       currencyChar: getCurrencyChar(),
-      variationColor: props.stock?.variation > 0 ? 'text-green' : 'text-red'
+      variationColor: props.stock?.variation > 0 ? 'text-green' : 'text-red',
+      urn: props.stock.urn,
+      showDetail
     }
   }
 }
