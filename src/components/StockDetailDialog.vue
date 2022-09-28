@@ -1,18 +1,31 @@
 <template>
   <q-dialog ref="dialogRef" position="bottom">
     <q-card>
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h5">{{ stock.name }}</div>
-          <q-space />
-          <div class="text-h6">bleble</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
+      <q-card-section class="row items-center">
+        <q-avatar class="absolute-center" rounded size="xl">
+          <img :src="brandIcon" />
+        </q-avatar>
+        <q-space />
+          <q-btn class="q-pa-none" v-close-popup flat round dense  icon="close" />
+      </q-card-section>
+      <q-card-section class="row items-center q-py-none">
+        <div class="text-h5 q-mx-sm">{{ stock.name }}</div>
+        <div class="text-subtitle3">{{ stock.isinCode }}</div>
+        <q-space />
+      </q-card-section>
 
-        <q-card-section>
-          youpi
-        </q-card-section>
-      </q-card>
+      <q-card-section>
+        <p>{{ stock?.values?.lastValue }}</p>
+        <p>{{ stock?.values?.variation }}</p>
+        <p>{{ stock?.values?.lastTime }}</p>
+      </q-card-section>
+
+      <q-card-actions class="items-center">
+        <q-space />
+        <q-btn icon="add">Nouvel ordre</q-btn>
+        <q-space />
+      </q-card-actions>
+    </q-card>
   </q-dialog>
 </template>
 
@@ -29,6 +42,7 @@ export default {
     const stockStore = useStockMarketStore()
     stockStore.fetchStockDetail(props.stockUrn)
     const stock = computed(() => stockStore.stockDetail)
+    console.log(stock.value)
 
     // required default props and methods from q-dialog, need to be setup for good rendering
     const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
@@ -38,11 +52,26 @@ export default {
       ...useDialogPluginComponent.emits
     ])
 
+    const brandIcons = computed(() => stockStore.brandIcons)
+    const brandIcon = computed(() => brandIcons.value[stock?.value?.isinCode]?.icon ?? '')
+
     onUnmounted(() => {
       stockStore.deleteStockDetail()
     })
 
-    return { stock, dialogRef, onDialogHide, onDialogCancel, defineEmits }
+    return { stock, dialogRef, onDialogHide, onDialogCancel, defineEmits, brandIcon }
   }
 }
 </script>
+
+<!-- name: result?.fullName?.default,
+            isinCode: result?.isinCode,
+            currency: result?.currency,
+            dividend: result?.consensus?.dividend?.previousYearValue, // dividend received year y for y-1 results
+            dividendPercent: result?.consensus?.dividendReturn?.previousYearValue,
+            values: {
+              lastValue: result?.values?.lastPrice,
+              variation: result?.values?.dayChangePercentage,
+              lastTime: result.values?.lastTime
+            },
+            marketCap: result?.consensus?.marketCap -->

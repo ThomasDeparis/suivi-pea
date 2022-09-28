@@ -1,4 +1,4 @@
-/* eslint-disable */
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <q-page>
     <q-select
@@ -10,6 +10,16 @@
       :options-dense=true
     />
 
+    <div class="q-pa-lg flex flex-center">
+      <q-pagination
+        v-model="selectedPage"
+        color="teal"
+        :max="getMaxPages()"
+        :max-pages="6"
+        boundary-numbers
+      />
+    </div>
+
     <div class="flex flex-center">
       <stock-card v-for="s in currentStock"
         :key="s.isinCode"
@@ -17,6 +27,7 @@
         :brandIcon="getBrandIcon(s.isinCode)"
       ></stock-card>
     </div>
+
     <div class="q-pa-lg flex flex-center">
     <q-pagination
       v-model="selectedPage"
@@ -37,7 +48,7 @@ import { useLechoBeApiStore } from '../stores/lecho-be-api'
 import StockCard from '../components/StockCard.vue'
 
 export default {
-  name: 'IndexPage',
+  name: 'StockMarkets',
   components: {
     StockCard
   },

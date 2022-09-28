@@ -1,5 +1,5 @@
 <template>
-  <q-card class="my-card q-ma-md" :key=isinCode>
+  <q-card class="my-card q-ma-md shadow-3" :key=isinCode>
     <q-list>
       <q-item>
         <q-item-section class="items-center">

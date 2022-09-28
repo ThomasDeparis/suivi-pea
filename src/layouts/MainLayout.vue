@@ -12,10 +12,12 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          {{ user?.email }}
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>
+          <q-btn flat round dense :icon="signIcon" aria-label="Se déconnecter" @click="signOut" />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -46,51 +48,22 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, computed, onBeforeMount } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
+import { useUserStore } from '../stores/user'
 
 const linksList = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
+    title: 'Se connecter',
+    caption: '',
+    icon: 'account',
+    link: '/signin'
   },
   {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
+    title: 'Marchés',
+    caption: '',
     icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+    link: '/stockmarkets'
   }
 ]
 
@@ -103,13 +76,27 @@ export default defineComponent({
 
   setup () {
     const leftDrawerOpen = ref(false)
+    const toggleLeftDrawer = () => { leftDrawerOpen.value = !leftDrawerOpen.value }
+
+    const userStore = useUserStore()
+    onBeforeMount(() => {
+      userStore.fetchUser()
+    })
+
+    const user = computed(() => userStore.currentUser)
+    const signIcon = computed(() => user?.value ? 'logout' : 'login')
+
+    const signOut = () => {
+      userStore.signOut()
+    }
 
     return {
+      user,
       essentialLinks: linksList,
       leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+      toggleLeftDrawer,
+      signOut,
+      signIcon
     }
   }
 })

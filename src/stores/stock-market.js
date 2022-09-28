@@ -27,7 +27,7 @@ export const useStockMarketStore = defineStore('stock-market', {
 
           for (let s of result.embedded.issues) {
             const tempStock = {
-              isinCode: s.isinCode,
+              isinCode: s?.isinCode,
               name: s?.fullName?.default,
               lastValue: s?.values?.lastPrice,
               variation: s?.values?.dayChangePercentage,
