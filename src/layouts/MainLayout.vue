@@ -12,11 +12,15 @@
         />
 
         <q-toolbar-title>
-          {{ user?.email }}
+          Suivi PEA
         </q-toolbar-title>
 
         <div>
-          <q-btn flat round dense :icon="signIcon" aria-label="Se déconnecter" @click="signOut" />
+          <q-btn flat
+            :icon-right="signButton.icon"
+            :label="signButton.label"
+            @click="signButton.onSign"
+          />
         </div>
       </q-toolbar>
     </q-header>
@@ -49,15 +53,16 @@
 
 <script>
 import { defineComponent, ref, computed, onBeforeMount } from 'vue'
+import { useRouter } from 'vue-router'
 import EssentialLink from 'components/EssentialLink.vue'
 import { useUserStore } from '../stores/user'
 
 const linksList = [
   {
-    title: 'Se connecter',
+    title: 'Mon portefeuille',
     caption: '',
-    icon: 'account',
-    link: '/signin'
+    icon: 'account_balance_wallet',
+    link: '/mywallet'
   },
   {
     title: 'Marchés',
@@ -84,19 +89,30 @@ export default defineComponent({
     })
 
     const user = computed(() => userStore.currentUser)
-    const signIcon = computed(() => user?.value ? 'logout' : 'login')
+    const router = useRouter()
 
-    const signOut = () => {
-      userStore.signOut()
-    }
+    const signButton = computed(() => {
+      if (user?.value) {
+        return {
+          onSign: userStore.signOut,
+          label: user?.value.email,
+          icon: 'logout'
+        }
+      } else {
+        return {
+          onSign: () => router.push({ path: 'signin' }),
+          label: 'Se connecter',
+          icon: 'login'
+        }
+      }
+    })
 
     return {
       user,
       essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer,
-      signOut,
-      signIcon
+      signButton
     }
   }
 })

@@ -3,15 +3,7 @@
     <q-list>
       <q-item>
         <q-item-section class="items-center">
-          <q-avatar v-if="brandIcon === ''"
-            rounded
-            icon="wallet"
-            color="teal"
-            text-color="white">
-          </q-avatar>
-          <q-avatar v-else rounded size="xl">
-            <img :src="brandIcon" />
-          </q-avatar>
+          <brand-icon :iconLink="brandIcon"></brand-icon>
         </q-item-section>
       </q-item>
       <q-item class="text-center text-bold">
@@ -27,11 +19,15 @@
 
 <script>
 import StockDetailDialog from './StockDetailDialog.vue'
+import BrandIcon from './BrandIcon.vue'
 import { useQuasar } from 'quasar'
 
 export default {
   name: 'StockCard',
   props: ['stock', 'brandIcon'],
+  components: {
+    BrandIcon
+  },
 
   setup (props) {
     const getCurrencyChar = () => {

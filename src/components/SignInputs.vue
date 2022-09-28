@@ -39,8 +39,7 @@
 </template>
 
 <script>
-import { useQuasar } from 'quasar'
-import { ref, computed, watch } from 'vue'
+import { ref } from 'vue'
 import { useUserStore } from '../stores/user'
 
 export default {
@@ -57,31 +56,31 @@ export default {
       return (passwordRepeat?.value && passwordRepeat?.value.length > 0 && passwordRepeat?.value === password?.value) || 'Répétez correctement le mot de passe'
     }
 
-    const $q = useQuasar()
+    // const $q = useQuasar()
     const userStore = useUserStore()
-    const user = computed(() => userStore.currentUser)
+    // const user = computed(() => userStore.currentUser)
 
     const onSubmit = () => {
       props.signUpMode ? userStore.signUp(email.value, password.value) : userStore.signIn(email.value, password.value)
     }
 
-    watch(user, () => {
-      if (userStore.error === false) {
-        $q.notify({
-          color: 'green-4',
-          textColor: 'white',
-          icon: 'cloud_done',
-          message: 'Bienvenue !'
-        })
-      } else {
-        $q.notify({
-          color: 'red-4',
-          textColor: 'white',
-          icon: 'error',
-          message: 'Identifiants incorrects'
-        })
-      }
-    })
+    // watch(user, () => {
+    //   if (userStore.error === false) {
+    //     $q.notify({
+    //       color: 'green-4',
+    //       textColor: 'white',
+    //       icon: 'cloud_done',
+    //       message: 'Bienvenue !'
+    //     })
+    //   } else {
+    //     $q.notify({
+    //       color: 'red-4',
+    //       textColor: 'white',
+    //       icon: 'error',
+    //       message: 'Identifiants incorrects'
+    //     })
+    //   }
+    // })
 
     const onReset = () => {
       email.value = null

@@ -1,12 +1,16 @@
 import { defineStore } from 'pinia'
-import { auth } from '../firebase.config'
+import { auth, db } from '../firebase.config'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth'
+import { collection, onSnapshot, query, where, limit } from 'firebase/firestore'
+
+let walletObserver = null
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     currentUser: null,
     error: false,
-    loading: false
+    loading: false,
+    wallet: null
   }),
 
   actions: {
@@ -15,7 +19,10 @@ export const useUserStore = defineStore('user', {
       this.loading = true
 
       await signInWithEmailAndPassword(auth, email, password)
-        .then(() => { this.error = false })
+        .then(() => {
+          this.error = false
+          this.fetchWallet()
+        })
         .catch((error) => {
           // TODO : gérer les erreurs avec un event ou un composant $q.notify() pour analyser l'erreur et notifier les pages concernées
           this.error = true
@@ -29,7 +36,10 @@ export const useUserStore = defineStore('user', {
       this.loading = true
 
       await createUserWithEmailAndPassword(auth, email, password)
-        .then(() => { this.loading = false })
+        .then(() => {
+          this.loading = false
+          this.fetchWallet()
+        })
         .catch((error) => {
           // TODO : gérer les erreurs avec un event ou un composant $q.notify() pour analyser l'erreur et notifier les pages concernées
           this.error = true
@@ -47,7 +57,32 @@ export const useUserStore = defineStore('user', {
     },
 
     async signOut () {
+      this.resetWallet()
       await signOut(auth)
+    },
+
+    async fetchWallet () {
+      if (this.currentUser != null && walletObserver == null) {
+        this.loading = true
+        const walletCollection = collection(db, 'wallets')
+        const queryOnUser = query(walletCollection, where('userId', '==', this.currentUser.uid), limit(1))
+
+        walletObserver = onSnapshot(queryOnUser, (snapshot) => {
+          this.wallet = snapshot.docs.pop().data()
+        },
+        (error) => {
+          // TODO : améliorer gestion d'erreur
+          this.wallet = null
+          throw error
+        })
+
+        this.loading = false
+      }
+    },
+
+    resetWallet () {
+      walletObserver()
+      this.wallet = null
     }
   }
 })
