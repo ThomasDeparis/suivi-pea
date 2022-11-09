@@ -13,6 +13,7 @@
 
         <q-toolbar-title>
           Suivi PEA
+          <q-badge color="white" text-color="primary" align="top">v0.2</q-badge>
         </q-toolbar-title>
 
         <div>

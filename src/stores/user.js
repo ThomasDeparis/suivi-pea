@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { auth, db } from '../firebase.config'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, onSnapshot, query, where, limit } from 'firebase/firestore'
+import { collection, onSnapshot, query, where } from 'firebase/firestore'
 
 let walletObserver = null
 
@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', {
     currentUser: null,
     error: false,
     loading: false,
-    wallet: null
+    wallets: []
   }),
 
   actions: {
@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', {
       await signInWithEmailAndPassword(auth, email, password)
         .then(() => {
           this.error = false
-          this.fetchWallet()
+          this.fetchWallets()
         })
         .catch((error) => {
           // TODO : gérer les erreurs avec un event ou un composant $q.notify() pour analyser l'erreur et notifier les pages concernées
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', {
       await createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
           this.loading = false
-          this.fetchWallet()
+          this.fetchWallets()
         })
         .catch((error) => {
           // TODO : gérer les erreurs avec un event ou un composant $q.notify() pour analyser l'erreur et notifier les pages concernées
@@ -61,18 +61,20 @@ export const useUserStore = defineStore('user', {
       await signOut(auth)
     },
 
-    async fetchWallet () {
+    async fetchWallets () {
       if (this.currentUser != null && walletObserver == null) {
         this.loading = true
         const walletCollection = collection(db, 'wallets')
-        const queryOnUser = query(walletCollection, where('userId', '==', this.currentUser.uid), limit(1))
+        const queryOnUser = query(walletCollection, where('userId', '==', this.currentUser.uid))
 
         walletObserver = onSnapshot(queryOnUser, (snapshot) => {
-          this.wallet = snapshot.docs.pop().data()
+          this.wallets = snapshot.docs.map(function (w) {
+            return { id: w.id, ...w.data() }
+          })
         },
         (error) => {
           // TODO : améliorer gestion d'erreur
-          this.wallet = null
+          this.wallets = []
           throw error
         })
 
@@ -81,8 +83,10 @@ export const useUserStore = defineStore('user', {
     },
 
     resetWallet () {
-      walletObserver()
-      this.wallet = null
+      if (walletObserver) {
+        walletObserver()
+      }
+      this.wallets = null
     }
   }
 })
